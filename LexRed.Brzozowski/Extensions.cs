@@ -1,9 +1,35 @@
 ﻿using System.Buffers;
-using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace LexRed.Brzozowski;
 internal static class Extensions {
+
+    public static char GetNextChar(this char ch)
+        => GetNextChar(ch, 1);
+
+    public static char GetNextChar(this char ch, int i)
+        => (char)(ch + i);
+
+    public static char GetPrevChar(this char ch)
+        => GetPrevChar(ch, 1);
+
+    public static char GetPrevChar(this char ch, int i)
+        => (char)(ch - i);
+
+    public static StringBuilder AppendIf(this StringBuilder sb, bool condition, char value) {
+
+        if (condition) sb.Append(value);
+
+        return sb;
+    }
+
+    public static StringBuilder AppendIf(this StringBuilder sb, bool condition, ReadOnlySpan<char> value) {
+
+        if (condition) sb.Append(value);
+
+        return sb;
+    }
 
     public static Span<T> Distinct<T>(this Span<T> span) {
 
@@ -88,7 +114,9 @@ internal static class Extensions {
         int i = 0;
 
         first.CopyTo(span);
-        second.CopyTo(span[..first.Length]);
+        i += first.Length;
+        second.CopyTo(span[first.Length..]);
+        i += second.Length;
 
         var union = span[..i].Distinct().ToArray();
 
@@ -103,6 +131,8 @@ internal static class Extensions {
 
         var pool = ArrayPool<CharClass>.Shared.Rent(length);
 
+        Span<CharClass> span = pool.AsSpan(0, length);
+
         for (int j = 0; j < charClasses.Length; ++j) {
 
             CharClass charClass = charClasses[j];
@@ -111,19 +141,17 @@ internal static class Extensions {
 
                 CharClass otherCharClass = otherCharClasses[i];
 
-                pool[i + j] = charClass;
+                span[i + charClasses.Length * j] = charClass.Intersection(otherCharClass);
 
             }
 
         }
 
-        foreach (var otherCharClass in otherCharClasses) {
-
-            charClass.Intersection(otherCharClass);
-
-        }
-
-
+        var result = span.ToArray();
 
         ArrayPool<CharClass>.Shared.Return(pool);
+
+        return result;
     }
+
+}

@@ -4,27 +4,25 @@ using System.Linq.Expressions;
 using System.Text;
 
 namespace LexRed.Brzozowski;
-public class DisjunctionRegex : BrzozowskiRegex {
-    public override BrzozowskiRegexKind Kind => BrzozowskiRegexKind.Disjunction;
+public class ConjunctionRegex : BrzozowskiRegex {
+    public override BrzozowskiRegexKind Kind => BrzozowskiRegexKind.Conjunction;
 
     public override bool IsNullable { get; }
 
     internal readonly BrzozowskiRegex[] _body;
 
-    internal DisjunctionRegex(bool sorted, params Span<BrzozowskiRegex> body) {
+    internal ConjunctionRegex(bool sorted, params Span<BrzozowskiRegex> body) {
 
         Debug.Assert(!body.IsEmpty);
 
         var distinct = sorted ? body : body.Distinct();
         IsNullable = distinct[0].IsNullable;
 
-        for (int i = 1; i < distinct.Length && !IsNullable; ++i) {
-
-            IsNullable = IsNullable || distinct[i].IsNullable;
+        for (int i = 1; i < distinct.Length && IsNullable; ++i) {
+            IsNullable = IsNullable && distinct[i].IsNullable;
         }
 
         _body = distinct.ToArray();
-
     }
 
     public override CharClass[] Classy() {
@@ -38,6 +36,7 @@ public class DisjunctionRegex : BrzozowskiRegex {
         }
 
         return result.ToArray();
+
     }
 
     public override BrzozowskiRegex Derive(char ch) {
@@ -56,32 +55,34 @@ public class DisjunctionRegex : BrzozowskiRegex {
 
         }
 
-        var or = MakeOr(span);
+        var and = MakeAnd(span);
 
         ArrayPool<BrzozowskiRegex>.Shared.Return(pool, true);
 
-        return or;
+        return and;
+
     }
 
     private protected override int CompareToCore(BrzozowskiRegex other) {
 
-        if (other is not DisjunctionRegex disjuctionRegex) throw new ArgumentException("Compared regex is not DisjunctionRegex");
+        if (other is not ConjunctionRegex conjunctionRegex) throw new ArgumentException("Compared regex is not ConjunctionRegex");
 
-        if (_body.Length > disjuctionRegex._body.Length) return -1;
+        if (_body.Length > conjunctionRegex._body.Length) return -1;
 
-        if (_body.Length < disjuctionRegex._body.Length) return 1;
+        if (_body.Length < conjunctionRegex._body.Length) return 1;
 
         int length = _body.Length;
 
         for (int i = 0; i < length; ++i) {
 
-            var compare = _body[i].CompareTo(disjuctionRegex._body[i]);
+            var compare = _body[i].CompareTo(conjunctionRegex._body[i]);
 
             if (compare is not 0) return compare;
 
         }
 
         return 0;
+
     }
 
     internal override void Show(StringBuilder builder, int precedence = 0) {
@@ -90,15 +91,16 @@ public class DisjunctionRegex : BrzozowskiRegex {
 
         if (bodySpan.IsEmpty) return;
 
-        builder.AppendIf(precedence > 0, '(');
+        builder.AppendIf(precedence > 1, '(');
 
-        bodySpan[0].Show(builder, 0);
+        bodySpan[0].Show(builder, 1);
 
         for (int i = 1; i < bodySpan.Length; ++i) {
-            builder.Append('|');
-            bodySpan[i].Show(builder, 0);
+            builder.Append('&');
+            bodySpan[i].Show(builder, 1);
         }
 
-        builder.AppendIf(precedence > 0, ')');
+        builder.AppendIf(precedence > 1, ')');
+
     }
 }

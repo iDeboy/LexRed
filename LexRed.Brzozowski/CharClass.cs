@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Text;
 
 namespace LexRed.Brzozowski;
 public readonly struct CharClass : IComparable<CharClass> {
@@ -11,9 +12,9 @@ public readonly struct CharClass : IComparable<CharClass> {
     public static readonly CharClass Any = default;
     public static readonly CharClass None = Any.CreateOposite();
 
-    public static CharClass CreatePos(string? chars) => new(true, chars);
+    public static CharClass CreatePos(ReadOnlySpan<char> chars) => new(true, chars);
 
-    public static CharClass CreateNeg(string? chars) => new(false, chars);
+    public static CharClass CreateNeg(ReadOnlySpan<char> chars) => new(false, chars);
 
     public readonly bool IsPositive => _isPos;
 
@@ -100,5 +101,89 @@ public readonly struct CharClass : IComparable<CharClass> {
         if (compare != 0) return -compare;
 
         return _chars.AsSpan().SequenceCompareTo(other._chars);
+    }
+
+
+    private static void AddToResult(StringBuilder builder, char low, char high) {
+
+        if (low == high)
+            builder.Append(low);
+        else if (low.GetNextChar() == high) {
+            builder.Append(low);
+            builder.Append(high);
+        }
+        else if (low.GetNextChar(2) == high) {
+            builder.Append(low);
+            builder.Append(low.GetNextChar());
+            builder.Append(high);
+        }
+        else {
+            builder.Append(low);
+            builder.Append('-');
+            builder.Append(high);
+        }
+
+    }
+
+    private void RangeFinder(StringBuilder builder) {
+
+        ReadOnlySpan<char> span = _chars.AsSpan();
+
+        if (span.IsEmpty) return;
+
+        char low = span[0];
+        char high = low;
+
+        if (span.Length is 1) {
+            builder.Append(low);
+            return;
+        }
+
+        var rest = span[1..];
+
+        foreach (char current in rest) {
+
+            if (current == high.GetNextChar()) {
+                high = current;
+                continue;
+            }
+
+            AddToResult(builder, low, high);
+
+            low = high = current;
+        }
+
+        AddToResult(builder, low, high);
+
+        return;
+    }
+
+    public readonly override string ToString() {
+
+        StringBuilder sb = new(256);
+
+        var span = _chars.AsSpan();
+
+        switch ((_isPos, span.Length)) {
+            case (true, 0):
+                sb.Append('[');
+                sb.Append(']');
+                break;
+            case (true, 1):
+                sb.Append(span);
+                break;
+            case (false, 0):
+                sb.Append('.');
+                break;
+            default:
+                sb.Append('[');
+                sb.AppendIf(IsNegative, '^');
+                RangeFinder(sb);
+                sb.Append(']');
+                break;
+        }
+
+        return sb.ToString();
+
     }
 }

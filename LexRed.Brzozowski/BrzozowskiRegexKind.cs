@@ -5,7 +5,6 @@ public enum BrzozowskiRegexKind {
     EmptySet,
     EmptyString,
     AnyChar,
-    AllChars,
 
     // Dynamic Expressions
     CharClass,
@@ -15,4 +14,6 @@ public enum BrzozowskiRegexKind {
     Complement,
     Kleene,
 
+    // Constant Expression
+    AllChars,
 }
