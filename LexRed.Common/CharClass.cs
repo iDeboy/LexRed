@@ -2,9 +2,10 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace LexRed.Brzozowski;
+namespace LexRed.Common;
 public readonly struct CharClass : IComparable<CharClass> {
 
+    private readonly bool _isEpsilon;
     private readonly bool _isPos;
     private readonly char[]? _chars;
 
@@ -12,6 +13,7 @@ public readonly struct CharClass : IComparable<CharClass> {
 
     public static readonly CharClass Any = default;
     public static readonly CharClass None = Any.CreateOposite();
+    public static readonly CharClass Epsilon = new(true);
 
     public static CharClass CreatePos(ReadOnlySpan<char> chars) => new(true, chars);
 
@@ -20,6 +22,8 @@ public readonly struct CharClass : IComparable<CharClass> {
     public readonly bool IsPositive => _isPos;
 
     public readonly bool IsNegative => !_isPos;
+
+    public readonly bool IsEpsilon => _isEpsilon;
 
     public readonly bool IsNone => _isPos && _chars.AsSpan().IsEmpty;
 
@@ -48,8 +52,13 @@ public readonly struct CharClass : IComparable<CharClass> {
         }
     }
 
+    internal CharClass(bool isEpsilon) {
+        _isEpsilon = isEpsilon;
+    }
+
     internal CharClass(bool isPos, ReadOnlySpan<char> chars) {
 
+        _isEpsilon = false;
         _isPos = isPos;
 
         char[] pool = ArrayPool<char>.Shared.Rent(chars.Length);
@@ -162,6 +171,8 @@ public readonly struct CharClass : IComparable<CharClass> {
     }
 
     public readonly override string ToString() {
+
+        if (IsEpsilon) return "ε";
 
         StringBuilder sb = new(256);
 

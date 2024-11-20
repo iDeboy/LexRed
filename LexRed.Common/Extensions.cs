@@ -2,17 +2,17 @@
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace LexRed.Brzozowski;
-internal static class Extensions {
+namespace LexRed.Common;
+public static class Extensions {
 
     public static char GetNextChar(this char ch)
-        => GetNextChar(ch, 1);
+        => ch.GetNextChar(1);
 
     public static char GetNextChar(this char ch, int i)
         => (char)(ch + i);
 
     public static char GetPrevChar(this char ch)
-        => GetPrevChar(ch, 1);
+        => ch.GetPrevChar(1);
 
     public static char GetPrevChar(this char ch, int i)
         => (char)(ch - i);
