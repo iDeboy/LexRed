@@ -1,12 +1,11 @@
 ﻿using System.Buffers;
-using System.Runtime.Intrinsics.Arm;
+using System.Collections.Frozen;
 using System.Text;
 
 namespace LexRed.Brzozowski;
 
 // using ExploreReturn = (HashSet<BrzozowskiRegex> States, Dictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions, HashSet<BrzozowskiRegex> FinalStates);
-using ExploreReturn = (SortedSet<BrzozowskiRegex> States, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions, SortedSet<BrzozowskiRegex> FinalStates);
-using RegexMap = SortedDictionary<BrzozowskiRegex, int>;
+using ExploreReturn = (SortedDictionary<BrzozowskiRegex, int> States, SortedDictionary<(int State, CharClass Symbols), int> Transitions, HashSet<int> FinalStates);
 
 // https://crypto.stanford.edu/~blynn/haskell/re.html
 public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable<BrzozowskiRegex> {
@@ -180,6 +179,17 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
         };
     }
 
+    public static BrzozowskiRegex MakeConcat(params Span<BrzozowskiRegex> res) {
+
+        if (res.IsEmpty) return EmptySet;
+
+        if (res.Length is 1) return res[0];
+
+        if (res.Length is 2) return MakeConcat(left: res[0], right: res[1]);
+
+        return MakeConcat(left: res[0], right: MakeConcat(res[1..]));
+    }
+
     public static BrzozowskiRegex MakeConcat(BrzozowskiRegex left, BrzozowskiRegex right) {
 
         // (r · s) · t ≈ r · (s · t)
@@ -217,24 +227,22 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
 
     public DFA MakeDFA() {
 
+        // TODO: get rid of recursion
+        var (statesRe, transitions, finalStatesRe) = Explore(new() { [this] = 0 }, [], (this, 0), IsNullable ? [0] : []);
 
+        FrozenSet<int> states = statesRe.Values.ToFrozenSet();
+        FrozenSet<int> finalStates = finalStatesRe.ToFrozenSet();
 
-        var (statesRe, transitionsRe, finalStatesRe) = Explore([this], [], this, IsNullable ? [this] : []);
-
-        HashSet<int> states = [];
-        Dictionary<(int, char), int> transitions = [];
-        HashSet<int> finalStates = [];
-
-        return new(0, states, transitions, finalStates);
+        return new DFA(0, states, transitions, finalStates);
     }
 
-    private ExploreReturn Explore(SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions, BrzozowskiRegex state, SortedSet<BrzozowskiRegex> finalStates) {
+    private ExploreReturn Explore(SortedDictionary<BrzozowskiRegex, int> states, SortedDictionary<(int State, CharClass Symbols), int> transitions, (BrzozowskiRegex Re, int Index) state, HashSet<int> finalStates) {
 
         var newStates = states;
         var newTransitions = transitions;
         var newFinalStates = finalStates;
 
-        foreach (var symbols in state.Classy()) {
+        foreach (var symbols in state.Re.Classy()) {
 
             if (symbols.IsNone) continue;
 
@@ -244,28 +252,25 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
         return (newStates, newTransitions, newFinalStates);
     }
 
-    private ExploreReturn Goto(BrzozowskiRegex state, CharClass symbols, SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions, SortedSet<BrzozowskiRegex> finalStates) {
+    private ExploreReturn Goto((BrzozowskiRegex Re, int Index) state, CharClass symbols, SortedDictionary<BrzozowskiRegex, int> states, SortedDictionary<(int State, CharClass Symbols), int> transitions, HashSet<int> finalStates) {
 
         char c = symbols.First;
-        var qc = state.Derive(c);
+        var qc = state.Re.Derive(c);
 
         // if exists any q in Q such that q is equivalent to qc
         if (states.TryGetValue(qc, out var q)) {
-            transitions.Add((state, symbols), q);
+            transitions.Add((state.Index, symbols), q);
             return (states, transitions, finalStates);
         }
 
-        states.Add(qc);
+        var index = states.Count;
+        states.Add(qc, index);
 
-        if (qc.IsNullable) finalStates.Add(qc);
+        if (qc.IsNullable) finalStates.Add(index);
 
-        transitions.Add((state, symbols), qc);
+        transitions.Add((state.Index, symbols), index);
 
-        return Explore(states, transitions, qc, finalStates);
-    }
-
-    private int LookupOrInsert() {
-        return 0;
+        return Explore(states, transitions, (qc, index), finalStates);
     }
 
     public override string ToString() {

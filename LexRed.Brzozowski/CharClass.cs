@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace LexRed.Brzozowski;
@@ -188,4 +189,60 @@ public readonly struct CharClass : IComparable<CharClass> {
         return sb.ToString();
 
     }
+
+    public readonly Enumerator GetEnumerator() => new(ref Unsafe.AsRef(in this));
+
+    public ref struct Enumerator {
+
+        private char _current;
+        private readonly ReadOnlySpan<char> _chars;
+        private readonly bool _isPos;
+
+        private int _index;
+
+        internal Enumerator(ref readonly CharClass charClass) {
+
+            _chars = charClass._chars;
+            _index = -1;
+
+        }
+
+        public readonly char Current => _current;
+
+        public bool MoveNext() {
+
+            int index = _index + 1;
+
+            if (_isPos) {
+
+                if (index < _chars.Length) {
+                    _index = index;
+                    return true;
+                }
+
+                return false;
+
+            }
+            else {
+
+                if (index > char.MaxValue) return false;
+
+                char ch = (char)index;
+
+                while (_chars.Contains(ch)) {
+
+                    ch = (char)++index;
+
+                    if (index > char.MaxValue) return false;
+                }
+
+                _current = ch;
+                _index = index;
+
+                return true;
+            }
+
+        }
+    }
+
 }
