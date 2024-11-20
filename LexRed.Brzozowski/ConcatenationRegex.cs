@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using LexRed.Common;
+using System.Diagnostics;
 using System.Text;
 
 namespace LexRed.Brzozowski;

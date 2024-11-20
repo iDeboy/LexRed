@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using LexRed.Common;
+using System.Text;
 
 namespace LexRed.Brzozowski; 
 public class CharClassRegex : BrzozowskiRegex {

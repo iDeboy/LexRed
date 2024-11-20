@@ -1,4 +1,5 @@
-﻿using System.Collections.Frozen;
+﻿using LexRed.Common;
+using System.Collections.Frozen;
 
 namespace LexRed.Brzozowski;
 

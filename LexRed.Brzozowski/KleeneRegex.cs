@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using LexRed.Common;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Text;
 

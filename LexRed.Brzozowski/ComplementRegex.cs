@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using LexRed.Common;
+using System.Linq.Expressions;
 using System.Text;
 
 namespace LexRed.Brzozowski;
