@@ -1,4 +1,5 @@
 ﻿using LexRed.Brzozowski;
+using LexRed.Common;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -22,7 +23,6 @@ using System.Runtime.CompilerServices;
 
 //var isMatch = dfa.IsMatch("a");
 
-// (a|b)*a(a|b)(a|b)(a|b)(a|b)
 
 CharClassRegex a = CharClass.CreatePos("a");
 CharClassRegex b = CharClass.CreatePos("b");
@@ -30,7 +30,8 @@ CharClassRegex b = CharClass.CreatePos("b");
 var a_or_b = BrzozowskiRegex.MakeOr(a, b);
 var a_or_b_k = BrzozowskiRegex.MakeKleene(a_or_b);
 
-var re = BrzozowskiRegex.MakeConcat(a_or_b_k, a, a_or_b, a_or_b, a_or_b);
+// (a|b)*a(a|b)(a|b)(a|b)(a|b)
+var re = BrzozowskiRegex.MakeConcat(a_or_b_k, a, a_or_b, a_or_b, a_or_b, a_or_b);
 
 var sw = Stopwatch.StartNew();
 
