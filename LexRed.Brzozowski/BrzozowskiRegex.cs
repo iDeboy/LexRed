@@ -1,10 +1,11 @@
 ﻿using System.Buffers;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 
 namespace LexRed.Brzozowski;
 
-using ExploreReturn = (HashSet<int> States, Dictionary<(int State, char Symbol), int> Transitions, HashSet<int> FinalStates);
-using GotoReturn = (SortedSet<BrzozowskiRegex> States, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions);
+// using ExploreReturn = (HashSet<BrzozowskiRegex> States, Dictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions, HashSet<BrzozowskiRegex> FinalStates);
+using ExploreReturn = (SortedSet<BrzozowskiRegex> States, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions, SortedSet<BrzozowskiRegex> FinalStates);
 using RegexMap = SortedDictionary<BrzozowskiRegex, int>;
 
 // https://crypto.stanford.edu/~blynn/haskell/re.html
@@ -99,7 +100,7 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
 
         var sortedSpan = flatSpan.Distinct();
 
-        sortedSpan.TrimStart(EmptySet);
+        sortedSpan = sortedSpan.TrimStart(EmptySet);
 
         if (sortedSpan.Length is 0) return EmptySet;
 
@@ -154,7 +155,7 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
 
         var sortedSpan = flatSpan.Distinct();
 
-        sortedSpan.TrimEnd(AllChars);
+        sortedSpan = sortedSpan.TrimEnd(AllChars);
 
         if (sortedSpan.Length is 0) return AllChars;
 
@@ -216,33 +217,51 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
 
     public DFA MakeDFA() {
 
-        var (states, transitions, finalStates) = Explore([this], [], this);
+
+
+        var (statesRe, transitionsRe, finalStatesRe) = Explore([this], [], this, IsNullable ? [this] : []);
+
+        HashSet<int> states = [];
+        Dictionary<(int, char), int> transitions = [];
+        HashSet<int> finalStates = [];
 
         return new(0, states, transitions, finalStates);
     }
 
-    private ExploreReturn Explore(SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions, BrzozowskiRegex state) {
+    private ExploreReturn Explore(SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions, BrzozowskiRegex state, SortedSet<BrzozowskiRegex> finalStates) {
 
         var newStates = states;
         var newTransitions = transitions;
+        var newFinalStates = finalStates;
 
         foreach (var symbols in state.Classy()) {
-            (newStates, newTransitions) = Goto(state, symbols, newStates, newTransitions);
+
+            if (symbols.IsNone) continue;
+
+            (newStates, newTransitions, newFinalStates) = Goto(state, symbols, newStates, newTransitions, newFinalStates);
         }
 
-        return default;
+        return (newStates, newTransitions, newFinalStates);
     }
 
-    private GotoReturn Goto(BrzozowskiRegex state, CharClass symbols, SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions) {
+    private ExploreReturn Goto(BrzozowskiRegex state, CharClass symbols, SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions, SortedSet<BrzozowskiRegex> finalStates) {
 
         char c = symbols.First;
         var qc = state.Derive(c);
 
-        if (states.TryGetValue(state, out var found)) {
-
+        // if exists any q in Q such that q is equivalent to qc
+        if (states.TryGetValue(qc, out var q)) {
+            transitions.Add((state, symbols), q);
+            return (states, transitions, finalStates);
         }
 
-        return default;
+        states.Add(qc);
+
+        if (qc.IsNullable) finalStates.Add(qc);
+
+        transitions.Add((state, symbols), qc);
+
+        return Explore(states, transitions, qc, finalStates);
     }
 
     private int LookupOrInsert() {

@@ -16,4 +16,6 @@ var a_or_b = BrzozowskiRegex.MakeOr(aRe, aRe, bRe);
 
 var or = BrzozowskiRegex.MakeOr(ab, ac, BrzozowskiRegex.EmptyString, a_or_b);
 
+var dfa = or.MakeDFA();
+
 return 0;

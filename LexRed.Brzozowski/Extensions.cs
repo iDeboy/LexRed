@@ -33,6 +33,8 @@ internal static class Extensions {
 
     public static Span<T> Distinct<T>(this Span<T> span) {
 
+        if (span.IsEmpty || span.Length is 1) return span;
+
         span.Sort();
 
         // Quitar duplicados
@@ -141,7 +143,7 @@ internal static class Extensions {
 
                 CharClass otherCharClass = otherCharClasses[i];
 
-                span[i + charClasses.Length * j] = charClass.Intersection(otherCharClass);
+                span[i + otherCharClasses.Length * j] = charClass.Intersection(otherCharClass);
 
             }
 

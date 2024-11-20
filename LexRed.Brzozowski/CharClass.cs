@@ -20,6 +20,8 @@ public readonly struct CharClass : IComparable<CharClass> {
 
     public readonly bool IsNegative => !_isPos;
 
+    public readonly bool IsNone => _isPos && _chars.AsSpan().IsEmpty;
+
     public readonly char First {
         get {
 
