@@ -2,6 +2,11 @@
 using System.Text;
 
 namespace LexRed.Brzozowski;
+
+using ExploreReturn = (HashSet<int> States, Dictionary<(int State, char Symbol), int> Transitions, HashSet<int> FinalStates);
+using GotoReturn = (SortedSet<BrzozowskiRegex> States, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions);
+using RegexMap = SortedDictionary<BrzozowskiRegex, int>;
+
 // https://crypto.stanford.edu/~blynn/haskell/re.html
 public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable<BrzozowskiRegex> {
 
@@ -114,6 +119,8 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
         var flatBuffer = ArrayPool<BrzozowskiRegex>.Shared.Rent(res.Length * 2);
         int flatCount = 0;
 
+        CharClassRegex? acum = null;
+
         foreach (var exp in res) {
 
             switch (exp.Kind) {
@@ -122,12 +129,26 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
                     c._body.AsSpan().CopyTo(flatBuffer.AsSpan(flatCount));
                     flatCount += c._body.Length;
                     break;
+                case BrzozowskiRegexKind.CharClass:
+
+                    var cc = (CharClassRegex)exp;
+
+                    if (acum is null) {
+                        acum = cc;
+                        continue;
+                    }
+
+                    acum = acum.CharClass.Intersection(cc.CharClass);
+                    break;
                 default:
                     flatBuffer[flatCount++] = exp;
                     break;
             }
 
         }
+
+        if (acum is not null)
+            flatBuffer[flatCount++] = acum;
 
         var flatSpan = flatBuffer.AsSpan(0, flatCount);
 
@@ -191,6 +212,41 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
             BrzozowskiRegexKind.Kleene => re,
             _ => new KleeneRegex(re),
         };
+    }
+
+    public DFA MakeDFA() {
+
+        var (states, transitions, finalStates) = Explore([this], [], this);
+
+        return new(0, states, transitions, finalStates);
+    }
+
+    private ExploreReturn Explore(SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions, BrzozowskiRegex state) {
+
+        var newStates = states;
+        var newTransitions = transitions;
+
+        foreach (var symbols in state.Classy()) {
+            (newStates, newTransitions) = Goto(state, symbols, newStates, newTransitions);
+        }
+
+        return default;
+    }
+
+    private GotoReturn Goto(BrzozowskiRegex state, CharClass symbols, SortedSet<BrzozowskiRegex> states, SortedDictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> transitions) {
+
+        char c = symbols.First;
+        var qc = state.Derive(c);
+
+        if (states.TryGetValue(state, out var found)) {
+
+        }
+
+        return default;
+    }
+
+    private int LookupOrInsert() {
+        return 0;
     }
 
     public override string ToString() {

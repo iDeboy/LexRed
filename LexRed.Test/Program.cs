@@ -1,7 +1,6 @@
 ﻿using LexRed.Brzozowski;
 
 // TODO: Make real tests with a specielized library
-
 CharClass a = CharClass.CreatePos("a");
 CharClass b = CharClass.CreatePos("b");
 CharClass c = CharClass.CreatePos("c");
