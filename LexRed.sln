@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35327.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Brzozowski", "LexRed.Brzozowski\LexRed.Brzozowski.csproj", "{0A7F45E4-3762-45DF-AA33-013E35B6DD9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Brzozowski.Test", "LexRed.Test\LexRed.Brzozowski.Test.csproj", "{D7B87AA0-215B-4823-8083-EC43BB0EC167}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Brzozowski.Test", "LexRed.Brzozowski.Test\LexRed.Brzozowski.Test.csproj", "{D7B87AA0-215B-4823-8083-EC43BB0EC167}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Thompson", "LexRed.Thompson\LexRed.Thompson.csproj", "{9C8FBAFB-D581-4910-A08E-46BB68D36593}"
 EndProject
