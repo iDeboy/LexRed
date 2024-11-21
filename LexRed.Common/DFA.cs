@@ -1,7 +1,6 @@
-﻿using LexRed.Common;
-using System.Collections.Frozen;
+﻿using System.Collections.Frozen;
 
-namespace LexRed.Brzozowski;
+namespace LexRed.Common;
 
 using State = int;
 using TransitionFrom = (int State, CharClass Symbols);
@@ -50,4 +49,6 @@ public sealed class DFA {
         return _finalStates.Contains(currentState);
 
     }
+
+
 }

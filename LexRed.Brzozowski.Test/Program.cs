@@ -38,7 +38,7 @@ var sw = Stopwatch.StartNew();
 var dfa = re.MakeDFA();
 
 Use(dfa);
-// Use(dfa.IsMatch("aaaba"));
+Use(dfa.IsMatch("aaaba"));
 
 sw.Stop();
 

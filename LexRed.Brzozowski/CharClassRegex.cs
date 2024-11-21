@@ -1,38 +1,43 @@
 ﻿using LexRed.Common;
+using System.Diagnostics;
 using System.Text;
 
-namespace LexRed.Brzozowski; 
+namespace LexRed.Brzozowski;
 public class CharClassRegex : BrzozowskiRegex {
     public override BrzozowskiRegexKind Kind => BrzozowskiRegexKind.CharClass;
 
     public override bool IsNullable => false;
 
-    public CharClass CharClass { get; init; }
+    internal readonly CharClass _charClass;
+
+    internal CharClassRegex(CharClass charClass) => _charClass = charClass;
 
     public override CharClass[] Classy() {
-        return [CharClass.CreateOposite(), CharClass];
+        return [_charClass.CreateOposite(), _charClass];
     }
 
     public override BrzozowskiRegex Derive(char ch) {
 
-        if (CharClass.Contains(ch)) return EmptyString;
+        if (_charClass.Contains(ch)) return EmptyString;
 
         return EmptySet;
     }
 
     internal override void Show(StringBuilder builder, int precedence = 0) {
-        builder.Append(CharClass.ToString());
+        builder.Append(_charClass.ToString());
     }
 
     private protected override int CompareToCore(BrzozowskiRegex other) {
 
-        if (other is not CharClassRegex charClassRegex) throw new ArgumentException("Compared regex is not CharClassRegex");
+        Debug.Assert(other is CharClassRegex);
 
-        return CharClass.CompareTo(charClassRegex.CharClass);
+        var charClassRegex = (CharClassRegex)other;
+
+        return _charClass.CompareTo(charClassRegex._charClass);
     }
 
     public static implicit operator CharClassRegex(CharClass charClass) {
-        return new CharClassRegex { CharClass = charClass };
+        return new CharClassRegex(charClass);
     }
 }
 
@@ -40,9 +45,7 @@ internal sealed class EmptySetRegex : CharClassRegex {
 
     public override BrzozowskiRegexKind Kind => BrzozowskiRegexKind.EmptySet;
 
-    public EmptySetRegex()
-        => CharClass = CharClass.None;
-
+    public EmptySetRegex() : base(CharClass.None) { }
 
     private protected override int CompareToCore(BrzozowskiRegex other)
         => 0;
@@ -53,7 +56,7 @@ internal sealed class AnyCharRegex : CharClassRegex {
 
     public override BrzozowskiRegexKind Kind => BrzozowskiRegexKind.AnyChar;
 
-    public AnyCharRegex() => CharClass = CharClass.Any;
+    public AnyCharRegex() : base(CharClass.Any) { }
 
     private protected override int CompareToCore(BrzozowskiRegex other)
         => 0;

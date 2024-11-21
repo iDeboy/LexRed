@@ -1,6 +1,5 @@
 ﻿using LexRed.Common;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Text;
 
 namespace LexRed.Brzozowski;
@@ -17,7 +16,7 @@ public class KleeneRegex : BrzozowskiRegex {
     public override CharClass[] Classy()
         => _inner.Classy();
 
-    public override BrzozowskiRegex Derive(char ch) 
+    public override BrzozowskiRegex Derive(char ch)
         => MakeConcat(_inner.Derive(ch), this);
 
     private protected override int CompareToCore(BrzozowskiRegex other) {

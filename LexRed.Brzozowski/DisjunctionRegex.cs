@@ -1,7 +1,6 @@
 ﻿using LexRed.Common;
 using System.Buffers;
 using System.Diagnostics;
-using System.Linq.Expressions;
 using System.Text;
 
 namespace LexRed.Brzozowski;
@@ -30,7 +29,7 @@ public class DisjunctionRegex : BrzozowskiRegex {
 
     public override CharClass[] Classy() {
 
-        Debug.Assert(_body.Length > 0);
+        Debug.Assert(_body.Length > 1);
 
         ReadOnlySpan<CharClass> result = _body[0].Classy();
 

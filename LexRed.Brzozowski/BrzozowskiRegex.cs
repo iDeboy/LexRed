@@ -83,7 +83,7 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
                         continue;
                     }
 
-                    acum = acum.CharClass.Union(cc.CharClass);
+                    acum = acum._charClass.Union(cc._charClass);
                     break;
 
                 default:
@@ -139,7 +139,7 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
                         continue;
                     }
 
-                    acum = acum.CharClass.Intersection(cc.CharClass);
+                    acum = acum._charClass.Intersection(cc._charClass);
                     break;
                 default:
                     flatBuffer[flatCount++] = exp;

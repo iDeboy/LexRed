@@ -1,5 +1,4 @@
 ﻿using LexRed.Common;
-using System.Linq.Expressions;
 using System.Text;
 
 namespace LexRed.Brzozowski;
@@ -10,10 +9,10 @@ public class ComplementRegex : BrzozowskiRegex {
 
     internal readonly BrzozowskiRegex _inner;
 
-    internal ComplementRegex(BrzozowskiRegex inner) 
+    internal ComplementRegex(BrzozowskiRegex inner)
         => _inner = inner;
 
-    public override CharClass[] Classy() 
+    public override CharClass[] Classy()
         => _inner.Classy();
 
     public override BrzozowskiRegex Derive(char ch)

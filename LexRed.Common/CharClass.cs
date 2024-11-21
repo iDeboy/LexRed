@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace LexRed.Common;
-public readonly struct CharClass : IComparable<CharClass> {
+public readonly struct CharClass : IEquatable<CharClass>, IComparable<CharClass> {
 
     private readonly bool _isEpsilon;
     private readonly bool _isPos;
@@ -77,7 +77,16 @@ public readonly struct CharClass : IComparable<CharClass> {
 
     public CharClass CreateOposite() => new(!_isPos, _chars);
 
-    public readonly bool Contains(char c) => _isPos ? _chars.AsSpan().Contains(c) : !_chars.AsSpan().Contains(c);
+    public readonly bool Contains(char c) => !_isEpsilon && (_isPos ? _chars.AsSpan().Contains(c) : !_chars.AsSpan().Contains(c));
+    public readonly bool Contains(CharClass cc) {
+
+        // TODO: Implement
+
+        if (cc.IsEpsilon) return true;
+
+        return false;
+
+    }
 
     public CharClass Intersection(CharClass other) {
 
@@ -202,6 +211,9 @@ public readonly struct CharClass : IComparable<CharClass> {
     }
 
     public readonly Enumerator GetEnumerator() => new(ref Unsafe.AsRef(in this));
+
+    public bool Equals(CharClass other)
+        => CompareTo(other) == 0;
 
     public ref struct Enumerator {
 
