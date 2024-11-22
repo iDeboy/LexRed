@@ -33,11 +33,9 @@ public sealed class NFA {
 
         EpsilonClosure(currentStates);
 
-        var nextStates = new HashSet<State>();
-
         foreach (ref readonly var ch in input) {
 
-            nextStates.Clear();
+            var nextStates = new HashSet<State>();
 
             foreach (var src in currentStates) {
 
@@ -88,7 +86,7 @@ public sealed class NFA {
 
             foreach (var (symbolsTo, dst) in to) {
 
-                if (symbolsTo.Equals(symbols))
+                if (symbolsTo.Contains(symbols))
                     next.Add(dst);
 
             }
@@ -124,21 +122,18 @@ public sealed class NFA {
                 var next = Move(current, charClass);
                 EpsilonClosure(next);
 
-                if (next.Count is 0) continue;
+                // if (next.Count is 0) continue;
 
-                if (statesMap.TryAdd(next, nextState++)) {
-                    states.Add(nextState);
+                if (statesMap.TryAdd(next, nextState)) {
+                    states.Add(nextState++);
                     queue.Enqueue(next);
                 }
 
                 transitions.Add((statesMap[current], charClass), statesMap[next]);
-                // afd.AgregarTransicion(mapaEstados[actual], simbolo, mapaEstados[siguiente]);
-
             }
-            // https://chatgpt.com/share/673ee19e-58a8-8005-aa54-293de86ee63e
+
             if (_finalStates.Overlaps(current)) {
                 finalStates.Add(statesMap[current]);
-                // afd.EstadosFinales.Add(mapaEstados[actual]);
             }
 
         }

@@ -31,6 +31,24 @@ public static class Extensions {
         return sb;
     }
 
+    public static bool Contains<T>(this Span<T> source, ReadOnlySpan<T> span)
+        => Contains((ReadOnlySpan<T>)source, span);
+
+    public static bool Contains<T>(this ReadOnlySpan<T> source, ReadOnlySpan<T> span) {
+
+        if (span.IsEmpty) return true;
+        if (source.Length < span.Length) return false;
+
+        for (int i = 0; i <= source.Length - span.Length; i++) {
+
+            if (source.Slice(i, span.Length).SequenceEqual(span))
+                return true;
+
+        }
+
+        return false;
+    }
+
     public static Span<T> Distinct<T>(this Span<T> span) {
 
         if (span.IsEmpty || span.Length is 1) return span;
@@ -144,12 +162,11 @@ public static class Extensions {
                 CharClass otherCharClass = otherCharClasses[i];
 
                 span[i + otherCharClasses.Length * j] = charClass.Intersection(otherCharClass);
-
             }
 
         }
 
-        var result = span.ToArray();
+        var result = span.Distinct().TrimStart(CharClass.None).ToArray();
 
         ArrayPool<CharClass>.Shared.Return(pool);
 

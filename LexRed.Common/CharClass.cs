@@ -54,6 +54,7 @@ public readonly struct CharClass : IEquatable<CharClass>, IComparable<CharClass>
 
     internal CharClass(bool isEpsilon) {
         _isEpsilon = isEpsilon;
+        _isPos = isEpsilon;
     }
 
     internal CharClass(bool isPos, ReadOnlySpan<char> chars) {
@@ -80,12 +81,24 @@ public readonly struct CharClass : IEquatable<CharClass>, IComparable<CharClass>
     public readonly bool Contains(char c) => !_isEpsilon && (_isPos ? _chars.AsSpan().Contains(c) : !_chars.AsSpan().Contains(c));
     public readonly bool Contains(CharClass cc) {
 
-        // TODO: Implement
+        if (_isEpsilon || cc._isEpsilon) return false;
 
-        if (cc.IsEpsilon) return true;
+        if (IsNone) return cc.IsNone;
+
+        if (cc.IsNone) return true;
+
+        ReadOnlySpan<char> thisSpan = _chars.AsSpan();
+        ReadOnlySpan<char> ccSpan = cc._chars.AsSpan();
+
+        if (_isPos && cc._isPos) return ccSpan.Except(thisSpan).Length == 0;
+
+        else if (_isPos && !cc._isPos) return false;
+
+        else if (!_isPos && cc._isPos) return thisSpan.Intersect(ccSpan).Length == 0;
+
+        else if (!_isPos && !cc._isPos) return ccSpan.Except(thisSpan).Length == 0;
 
         return false;
-
     }
 
     public CharClass Intersection(CharClass other) {
