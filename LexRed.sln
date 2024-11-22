@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Common", "LexRed.Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Thompson.Test", "LexRed.Thompson.Test\LexRed.Thompson.Test.csproj", "{9A9A05F8-16D8-4FA6-97CF-225B4094FA05}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LexRed.Benchmarks", "LexRed.Benchmarks\LexRed.Benchmarks.csproj", "{ABA56949-54FA-44FB-9A73-D406327E5CCA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{9A9A05F8-16D8-4FA6-97CF-225B4094FA05}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A9A05F8-16D8-4FA6-97CF-225B4094FA05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A9A05F8-16D8-4FA6-97CF-225B4094FA05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABA56949-54FA-44FB-9A73-D406327E5CCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABA56949-54FA-44FB-9A73-D406327E5CCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABA56949-54FA-44FB-9A73-D406327E5CCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABA56949-54FA-44FB-9A73-D406327E5CCA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
