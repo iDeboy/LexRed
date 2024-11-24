@@ -6,16 +6,24 @@ using State = int;
 using TransitionFrom = (int State, CharClass Symbols);
 using TransitionTo = int;
 
-public sealed class DFA {
+public sealed class DFA : IAutomaton<State, TransitionFrom, TransitionTo> {
 
     private readonly State _initialState;
     private readonly FrozenSet<State> _states;
-    private readonly SortedDictionary<TransitionFrom, TransitionTo> _transitions;
+    private readonly FrozenDictionary<TransitionFrom, TransitionTo> _transitions;
     private readonly FrozenSet<State> _finalStates;
+
+    public int InitialState => _initialState;
+
+    public FrozenSet<int> States => _states;
+
+    public FrozenDictionary<(int State, CharClass Symbols), int> Transitions => _transitions;
+
+    public FrozenSet<int> FinalStates => _finalStates;
 
     public DFA(State initialState,
         FrozenSet<State> states,
-        SortedDictionary<TransitionFrom, TransitionTo> transitions,
+        FrozenDictionary<TransitionFrom, TransitionTo> transitions,
         FrozenSet<State> finalStates) {
         _initialState = initialState;
         _states = states;

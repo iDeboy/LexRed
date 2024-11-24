@@ -6,7 +6,7 @@ using System.Text;
 namespace LexRed.Brzozowski;
 
 // using ExploreReturn = (HashSet<BrzozowskiRegex> States, Dictionary<(BrzozowskiRegex State, CharClass Symbols), BrzozowskiRegex> Transitions, HashSet<BrzozowskiRegex> FinalStates);
-using ExploreReturn = (SortedDictionary<BrzozowskiRegex, int> States, SortedDictionary<(int State, CharClass Symbols), int> Transitions, HashSet<int> FinalStates);
+using ExploreReturn = (SortedDictionary<BrzozowskiRegex, int> States, Dictionary<(int State, CharClass Symbols), int> Transitions, HashSet<int> FinalStates);
 
 // https://crypto.stanford.edu/~blynn/haskell/re.html
 public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable<BrzozowskiRegex> {
@@ -229,15 +229,18 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
     public DFA MakeDFA() {
 
         // TODO: get rid of recursion
-        var (statesRe, transitions, finalStatesRe) = Explore(new() { [this] = 0 }, [], (this, 0), IsNullable ? [0] : []);
+        var (statesRe, transitionsRe, finalStatesRe) = Explore(new() { [this] = 0 }, [], (this, 0), IsNullable ? [0] : []);
 
         FrozenSet<int> states = statesRe.Values.ToFrozenSet();
         FrozenSet<int> finalStates = finalStatesRe.ToFrozenSet();
+        FrozenDictionary<(int State, CharClass Symbols), int> transitions = transitionsRe.ToFrozenDictionary();
+
+        
 
         return new DFA(0, states, transitions, finalStates);
     }
 
-    private ExploreReturn Explore(SortedDictionary<BrzozowskiRegex, int> states, SortedDictionary<(int State, CharClass Symbols), int> transitions, (BrzozowskiRegex Re, int Index) state, HashSet<int> finalStates) {
+    private ExploreReturn Explore(SortedDictionary<BrzozowskiRegex, int> states, Dictionary<(int State, CharClass Symbols), int> transitions, (BrzozowskiRegex Re, int Index) state, HashSet<int> finalStates) {
 
         var newStates = states;
         var newTransitions = transitions;
@@ -253,7 +256,7 @@ public abstract class BrzozowskiRegex : IEquatable<BrzozowskiRegex>, IComparable
         return (newStates, newTransitions, newFinalStates);
     }
 
-    private ExploreReturn Goto((BrzozowskiRegex Re, int Index) state, CharClass symbols, SortedDictionary<BrzozowskiRegex, int> states, SortedDictionary<(int State, CharClass Symbols), int> transitions, HashSet<int> finalStates) {
+    private ExploreReturn Goto((BrzozowskiRegex Re, int Index) state, CharClass symbols, SortedDictionary<BrzozowskiRegex, int> states, Dictionary<(int State, CharClass Symbols), int> transitions, HashSet<int> finalStates) {
 
         char c = symbols.First;
         var qc = state.Re.Derive(c);

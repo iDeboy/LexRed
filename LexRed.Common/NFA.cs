@@ -1,5 +1,4 @@
 ﻿using System.Collections.Frozen;
-using System.Collections.Generic;
 
 namespace LexRed.Common;
 
@@ -7,13 +6,21 @@ using State = int;
 using TransitionFrom = int;
 using TransitionTo = List<(CharClass Symbols, int StateTo)>;
 
-public sealed class NFA {
+public sealed class NFA : IAutomaton<State, TransitionFrom, TransitionTo> {
 
     private readonly State _initialState;
     private readonly FrozenSet<State> _states;
     private readonly FrozenDictionary<TransitionFrom, TransitionTo> _transitions;
     private readonly FrozenSet<State> _finalStates;
     private readonly CharClass[] _charClasses;
+
+    public int InitialState => _initialState;
+
+    public FrozenSet<int> States => _states;
+
+    public FrozenDictionary<int, TransitionTo> Transitions => _transitions;
+
+    public FrozenSet<int> FinalStates => _finalStates;
 
     public NFA(State initialState,
         FrozenSet<State> states,
@@ -99,7 +106,7 @@ public sealed class NFA {
     public DFA ToDFA() {
 
         HashSet<State> states = [0, 1];
-        SortedDictionary<(State StateFrom, CharClass Symbols), State> transitions = [];
+        Dictionary<(State StateFrom, CharClass Symbols), State> transitions = [];
         HashSet<State> finalStates = [];
 
         var statesMap = new Dictionary<HashSet<int>, int>(HashSet<int>.CreateSetComparer());
@@ -138,7 +145,7 @@ public sealed class NFA {
 
         }
 
-        return new DFA(_initialState, states.ToFrozenSet(), transitions, finalStates.ToFrozenSet());
+        return new DFA(_initialState, states.ToFrozenSet(), transitions.ToFrozenDictionary(), finalStates.ToFrozenSet());
     }
 
 }

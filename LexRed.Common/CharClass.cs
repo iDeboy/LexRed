@@ -228,6 +228,10 @@ public readonly struct CharClass : IEquatable<CharClass>, IComparable<CharClass>
     public bool Equals(CharClass other)
         => CompareTo(other) == 0;
 
+    public override int GetHashCode() {
+        return HashCode.Combine(_isEpsilon, _isPos, string.GetHashCode(_chars));
+    }
+
     public ref struct Enumerator {
 
         private char _current;
