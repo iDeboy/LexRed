@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Columns;
 using LexRed.Common;
 
 using BrzozowskiRegex = LexRed.Brzozowski.BrzozowskiRegex;
@@ -9,9 +8,8 @@ namespace LexRed.Benchmarks.Benchmarks;
 
 [MarkdownExporterAttribute.GitHub]
 [MemoryDiagnoser(false)]
-[HideColumns(Column.InvocationCount, Column.UnrollFactor, Column.Job)]
 [LongRunJob]
-public class AutomatonCreationBenchmark {
+public class CreationBenchmark {
 
     /*
      Regex to benchmarks:
@@ -172,7 +170,7 @@ public class AutomatonCreationBenchmark {
             )));
 
         // ((a|b|c)*d|(e|f|g)(e|f|g)*h)* i (j|k|l)m(n|o|p(q|r|s)*t)* u
-        return BrzozowskiRegex.MakeConcat(brGroup1, t, brGroup2, u);
+        return BrzozowskiRegex.MakeConcat(brGroup1, i, brGroup2, u);
     }
 
     //[Benchmark]
@@ -315,7 +313,7 @@ public class AutomatonCreationBenchmark {
         // (a|b|c)*d|(e|f|g)(e|f|g)*h)*
         var group1 = ThompsonRegex.MakeKleene(ThompsonRegex.MakeOr(
             ThompsonRegex.MakeConcat(
-                ThompsonRegex.MakeKleene(ThompsonRegex.MakeOr(a, f, g)),
+                ThompsonRegex.MakeKleene(ThompsonRegex.MakeOr(a, b, c)),
                 d
                 ),
             ThompsonRegex.MakeConcat(temp, ThompsonRegex.MakeKleene(temp), h)
